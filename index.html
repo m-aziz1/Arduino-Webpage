@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Send text to Arduino</title>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <h1>Send text to Arduino LCD</h1>
+    <input type="text" id="text-input" placeholder="Enter text to display" />
+    <button onclick="sendText()">Send</button>
+
+    <script>
+      const socket = io();
+      function sendText() {
+        const text = document.getElementById("text-input").value;
+        socket.emit("sendText", text);
+      }
+    </script>
+  </body>
+</html>
