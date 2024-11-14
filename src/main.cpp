@@ -1,36 +1,63 @@
-#include <Arduino.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
 #include <LiquidCrystal.h>
 
+#define DHTPIN 8      // Pin connected to DHT11 data pin
+#define DHTTYPE DHT11 // DHT11 sensor type
+
 const int rs = 7, en = 6, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+
+DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 void setup()
 {
-  // put your setup code here, to run once:
   lcd.begin(16, 2);
+  dht.begin();
   Serial.begin(9600);
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-  if (Serial.available() > 0)
+  if (Serial.available())
   {
-    lcd.clear();
-    String text = Serial.readStringUntil('\n');
+    String input = Serial.readStringUntil('\n');
 
-    // Display text on lCD
-    lcd.setCursor(0, 0);
-    if (text.length() <= 16)
+    // Clear the LCD for new data
+    lcd.clear();
+
+    if (input.startsWith("CITY_TEMP:"))
     {
-      lcd.print(text); // Print all if it fits in one row
-    }
-    else
-    {
-      // Split text onto 2 rows
-      lcd.print(text.substring(0, 16));
+      // Parse the city temperature and city name
+      int cityTempIndex = input.indexOf(":") + 1;
+      int cityIndex = input.indexOf(",CITY:") + 6;
+
+      String cityTemp = input.substring(cityTempIndex, input.indexOf(",CITY:"));
+      String city = input.substring(cityIndex).substring(0, 3);
+
+      // Read room temperature from DHT11 sensor
+      float roomTemp = dht.readTemperature();
+      if (isnan(roomTemp))
+      {
+        roomTemp = 0.0; // Fallback if sensor reading fails
+      }
+
+      // Display city and temperature on the first line
+      lcd.setCursor(0, 0);
+      lcd.print(city);
+      lcd.print(": ");
+      lcd.print(cityTemp);
+      lcd.print((char)223); // Degree symbol
+      lcd.print("C");
+
+      // Display room temperature on the second line
       lcd.setCursor(0, 1);
-      lcd.print(text.substring(16));
+      lcd.print("Room: ");
+      lcd.print(roomTemp, 2);
+      lcd.print((char)223);
+      lcd.print("C");
+
+      delay(2000); // Delay for readability
     }
   }
 }
