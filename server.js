@@ -3,36 +3,53 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
+const axios = require("axios");
+
+const API_KEY = "9b8c6be72d0dc2af6d6e5c9d329d54fb"; // OpenWeatherMap API key
+const PORT = 3000;
+const DHT_SENSOR_PIN = 7; // DHT11 sensor pin on Arduino
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Define and check serial port path
-const portPath = "/dev/ttyACM0"; // replace with the actual port if different
-if (!portPath) {
-    throw new Error("Serial port path is not defined. Please specify the correct path.");
-}
-
-// Set up SerialPort to communicate with Arduino
+const portPath = "/dev/ttyACM0"; // Arduino port
 const port = new SerialPort({
     path: portPath,
     baudRate: 9600,
 });
-
-// Pipe the port data to a ReadlineParser
 const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-// Serve the HTML page
+// Serve static files (HTML, CSS)
 app.use(express.static(__dirname));
 
-// Handle incoming socket connections
+// Fetch weather data for the selected city
+async function getCityWeather(city) {
+    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`;
+
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
+        return data.main.temp; // Return city temperature in Celsius
+    } catch (error) {
+        console.error("Error fetching city weather:", error.message);
+        return null;
+    }
+}
+
+// Handle client connections
 io.on("connection", (socket) => {
     console.log("A user connected");
 
-    socket.on("sendText", (text) => {
-        console.log("Text received from client:", text);
-        port.write(text + "\n"); // Send text to Arduino
+    socket.on("getWeather", async (city) => {
+        const cityTemp = await getCityWeather(city);
+
+        if (cityTemp !== null) {
+            // Send city temperature and request room temperature from Arduino
+            port.write(`CITY_TEMP:${cityTemp},CITY:${city}\n`);
+        } else {
+            console.log("Could not fetch city temperature.");
+        }
     });
 
     socket.on("disconnect", () => {
@@ -40,7 +57,6 @@ io.on("connection", (socket) => {
     });
 });
 
-const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
