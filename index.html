@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Send text to Arduino</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather to Arduino LCD</title>
+</head>
+<body>
+    <h1>Select City to Display Weather on Arduino LCD</h1>
+    <label for="citySelect">Select a city:</label>
+    <select id="citySelect">
+        <option value="Edmonton">Edmonton</option>
+        <option value="Toronto">Toronto</option>
+        <option value="Vancouver">Vancouver</option>
+    </select>
+    <button id="getWeather">Get Weather</button>
+    
     <script src="/socket.io/socket.io.js"></script>
-  </head>
-  <body>
-    <h1>Send text to Arduino LCD</h1>
-    <input type="text" id="text-input" placeholder="Enter text to display" />
-    <button onclick="sendText()">Send</button>
-
     <script>
-      const socket = io();
-      function sendText() {
-        const text = document.getElementById("text-input").value;
-        socket.emit("sendText", text);
-      }
+        const socket = io();
+
+        document.getElementById("getWeather").onclick = () => {
+            const city = document.getElementById("citySelect").value;
+            socket.emit("getWeather", city);
+        };
     </script>
-  </body>
+</body>
 </html>
