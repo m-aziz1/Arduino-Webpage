@@ -2,12 +2,12 @@
 #include <DHT.h>
 #include <LiquidCrystal.h>
 
-#define DHTPIN 8      // Pin connected to DHT11 data pin
-#define DHTTYPE DHT11 // DHT11 sensor type
+#define DHTPIN 2      // Pin connected to DHT11 data pin
+#define TYPE DHT11 // DHT11 sensor type
 
-const int rs = 7, en = 6, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+const int rs = 8, en = 7, d4 = 6, d5 = 5, d6 = 4, d7 = 3;
 
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHTPIN, TYPE);
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 void setup()

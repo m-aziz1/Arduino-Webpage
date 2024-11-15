@@ -1,1 +1,1 @@
-Displaying text on a 1602 LCD Module using Arduino and Node.js
+Select City to Display Weather on Arduino LCD, using Node.js and OpenWeather's Weather API. Also displays temperature of the current room using DHT11 sensor.
